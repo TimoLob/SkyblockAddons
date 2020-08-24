@@ -1995,7 +1995,7 @@ public class RenderListener {
         GlStateManager.disableTexture2D();
 
         Color color = main.getConfigValues().getColor(Feature.SHOW_PRIVATE_ISLAND_BORDER);
-        GlStateManager.color(color.getRed()/255F, color.getGreen()/255F, color.getBlue()/255F, 0.2F);
+        GlStateManager.color(color.getRed()/255F, color.getGreen()/255F, color.getBlue()/255F, 0.5F);
 
         drawBorderGrid(partialTicks); // Draws the grid
 
