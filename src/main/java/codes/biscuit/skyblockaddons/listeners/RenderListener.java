@@ -1927,6 +1927,63 @@ public class RenderListener {
         }
     }
 
+    private void drawLine(double x1,double y1, double z1, double x2, double y2, double z2, float partialTicks) {
+        Minecraft mc = Minecraft.getMinecraft();
+        Entity renderViewEntity = mc.getRenderViewEntity();
+
+        double viewX = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double)partialTicks;
+        double viewY = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double)partialTicks;
+        double viewZ = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double)partialTicks;
+        x1 -= viewX;
+        y1 -= viewY;
+        z1 -= viewZ;
+        x2 -= viewX;
+        y2 -= viewY;
+        z2 -= viewZ;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer worldRenderer = tessellator.getWorldRenderer();
+        worldRenderer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION);
+        worldRenderer.pos(x1,y1,z1).endVertex();
+        worldRenderer.pos(x2,y2,z2).endVertex();
+        tessellator.draw();
+    }
+
+    private void drawBorderGrid(float partialTicks) {
+        final double step = 1;
+        double gridSize = 7;
+        double islandSize = 80; // Private Island size
+        double minDistance = 6; // How close you need to be to see the border
+        Minecraft mc = Minecraft.getMinecraft();
+        Entity renderViewEntity = mc.getRenderViewEntity();
+        double viewX = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double)partialTicks;
+        double viewY = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double)partialTicks;
+        double viewZ = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double)partialTicks;
+        if(Math.abs(viewX)>74) { // Only Render if close to world border
+            double yStart = Math.max(viewY-gridSize,0);
+            double yEnd = Math.min(viewY+gridSize,255);
+            double x = viewX > 0 ? islandSize+1 : -1*islandSize;
+            double zStart = Math.max(viewZ-gridSize,-1*islandSize);
+            double zEnd = Math.min(viewZ+gridSize,islandSize+1);
+
+            for(double z = zStart;z<=zEnd;z+=step)
+                drawLine(x,yStart,z,x,yEnd,z,partialTicks);
+            for(double y=yStart;y<=yEnd;y+=step)
+                drawLine(x,y,zStart,x,y,zEnd,partialTicks);
+        }
+        if(Math.abs(viewZ) > 74) {
+            double yStart = Math.max(viewY-gridSize,0);
+            double yEnd = Math.min(viewY+gridSize,255);
+            double z = viewZ > 0 ? islandSize+1 : -1*islandSize;
+            double xStart = Math.max(viewX-gridSize,-1*islandSize);
+            double xEnd = Math.min(viewX+gridSize,islandSize+1);
+            for(double x = xStart;x<=xEnd;x+=step)
+                drawLine(x,yStart,z,x,yEnd,z,partialTicks);
+            for(double y=yStart;y<=yEnd;y+=step)
+                drawLine(xStart,y,z,xEnd,y,z,partialTicks);
+        }
+    }
+
     private void drawWorldBorder(float partialTicks) {
         GlStateManager.pushMatrix();
         GL11.glNormal3f(0.0F, 1.0F, 0.0F);
@@ -1940,30 +1997,12 @@ public class RenderListener {
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.enableAlpha();
         GlStateManager.disableTexture2D();
+
         Color color = main.getConfigValues().getColor(Feature.SHOW_HEALING_CIRCLE_WALL);
         GlStateManager.color(color.getRed()/255F, color.getGreen()/255F, color.getBlue()/255F, 0.2F);
-        Point3d corner1 = new Point3d(-80,0,-80);
-        Point3d corner2 = new Point3d(-80,255,-80);
 
-        System.out.println("Drawing line from "+corner1.toString() +" to "+corner2.toString());
-
-        Minecraft mc = Minecraft.getMinecraft();
-        Entity renderViewEntity = mc.getRenderViewEntity();
-        double viewX = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double)partialTicks;
-        double viewY = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double)partialTicks;
-        double viewZ = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double)partialTicks;
-        corner1.x-=viewX;
-        corner2.x-=viewX;
-        corner1.y-=viewY;
-        corner2.y-=viewY;
-        corner1.z-=viewZ;
-        corner2.z-=viewZ;
-        Tessellator tesselator = Tessellator.getInstance();
-        WorldRenderer worldRenderer = tesselator.getWorldRenderer();
-        worldRenderer.begin(GL11.GL_QUAD_STRIP,DefaultVertexFormats.POSITION);
-        worldRenderer.pos(corner1.x,corner1.y,corner1.z).endVertex();
-        worldRenderer.pos(corner1.x,corner2.y,corner1.z).endVertex();
-        tesselator.draw();
+        //drawLine(-80,0,-80,-80,255,-80,partialTicks);
+        drawBorderGrid(partialTicks);
         GlStateManager.enableCull();
         GlStateManager.enableTexture2D();
         GlStateManager.enableDepth();
