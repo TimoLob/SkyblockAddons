@@ -59,6 +59,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.opengl.GL11;
 
+import javax.vecmath.Point3d;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.math.BigDecimal;
@@ -1829,6 +1830,9 @@ public class RenderListener {
                 GlStateManager.popMatrix();
             }
         }
+        if(main.getUtils().isOnSkyblock() && main.getUtils().getLocation() == Location.ISLAND) {
+            drawWorldBorder(partialTicks);
+        }
 
         if (main.getUtils().isOnSkyblock() && main.getUtils().isInDungeon() && main.getConfigValues().isEnabled(Feature.SHOW_CRITICAL_DUNGEONS_TEAMMATES)) {
             Entity renderViewEntity = mc.getRenderViewEntity();
@@ -1921,5 +1925,52 @@ public class RenderListener {
                 GlStateManager.popMatrix();
             }
         }
+    }
+
+    private void drawWorldBorder(float partialTicks) {
+        GlStateManager.pushMatrix();
+        GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+
+        GlStateManager.disableLighting();
+        GlStateManager.depthMask(false);
+        GlStateManager.enableDepth();
+        GlStateManager.enableBlend();
+        GlStateManager.depthFunc(GL11.GL_LEQUAL);
+        GlStateManager.disableCull();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.enableAlpha();
+        GlStateManager.disableTexture2D();
+        Color color = main.getConfigValues().getColor(Feature.SHOW_HEALING_CIRCLE_WALL);
+        GlStateManager.color(color.getRed()/255F, color.getGreen()/255F, color.getBlue()/255F, 0.2F);
+        Point3d corner1 = new Point3d(-80,0,-80);
+        Point3d corner2 = new Point3d(-80,255,-80);
+
+        System.out.println("Drawing line from "+corner1.toString() +" to "+corner2.toString());
+
+        Minecraft mc = Minecraft.getMinecraft();
+        Entity renderViewEntity = mc.getRenderViewEntity();
+        double viewX = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double)partialTicks;
+        double viewY = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double)partialTicks;
+        double viewZ = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double)partialTicks;
+        corner1.x-=viewX;
+        corner2.x-=viewX;
+        corner1.y-=viewY;
+        corner2.y-=viewY;
+        corner1.z-=viewZ;
+        corner2.z-=viewZ;
+        Tessellator tesselator = Tessellator.getInstance();
+        WorldRenderer worldRenderer = tesselator.getWorldRenderer();
+        worldRenderer.begin(GL11.GL_QUAD_STRIP,DefaultVertexFormats.POSITION);
+        worldRenderer.pos(corner1.x,corner1.y,corner1.z).endVertex();
+        worldRenderer.pos(corner1.x,corner2.y,corner1.z).endVertex();
+        tesselator.draw();
+        GlStateManager.enableCull();
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableDepth();
+        GlStateManager.depthMask(true);
+        GlStateManager.enableLighting();
+        GlStateManager.disableBlend();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.popMatrix();
     }
 }
