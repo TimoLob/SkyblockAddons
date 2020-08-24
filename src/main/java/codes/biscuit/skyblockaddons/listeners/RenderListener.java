@@ -1927,13 +1927,10 @@ public class RenderListener {
         }
     }
 
-    private void drawLine(double x1,double y1, double z1, double x2, double y2, double z2, float partialTicks) {
+    private void drawLine(double x1,double y1, double z1, double x2, double y2, double z2, double viewX, double viewY, double viewZ) {
         Minecraft mc = Minecraft.getMinecraft();
         Entity renderViewEntity = mc.getRenderViewEntity();
 
-        double viewX = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double)partialTicks;
-        double viewY = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double)partialTicks;
-        double viewZ = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double)partialTicks;
         x1 -= viewX;
         y1 -= viewY;
         z1 -= viewZ;
@@ -1951,36 +1948,35 @@ public class RenderListener {
 
     private void drawBorderGrid(float partialTicks) {
         final double step = 1;
-        double gridSize = 7;
+        double gridSize = 3;
         double islandSize = 80; // Private Island size
-        double minDistance = 6; // How close you need to be to see the border
+        double minDistance = 8; // How close you need to be to see the border
         Minecraft mc = Minecraft.getMinecraft();
         Entity renderViewEntity = mc.getRenderViewEntity();
         double viewX = renderViewEntity.prevPosX + (renderViewEntity.posX - renderViewEntity.prevPosX) * (double)partialTicks;
         double viewY = renderViewEntity.prevPosY + (renderViewEntity.posY - renderViewEntity.prevPosY) * (double)partialTicks;
         double viewZ = renderViewEntity.prevPosZ + (renderViewEntity.posZ - renderViewEntity.prevPosZ) * (double)partialTicks;
-        if(Math.abs(viewX)>74) { // Only Render if close to world border
-            double yStart = Math.max(viewY-gridSize,0);
-            double yEnd = Math.min(viewY+gridSize,255);
+
+        double yStart = Math.floor(Math.max(viewY-gridSize,0));
+        double yEnd = Math.ceil(Math.min(viewY+gridSize,255));
+        if(Math.abs(viewX)>islandSize-minDistance) { // Only Render if close to world border
             double x = viewX > 0 ? islandSize+1 : -1*islandSize;
-            double zStart = Math.max(viewZ-gridSize,-1*islandSize);
-            double zEnd = Math.min(viewZ+gridSize,islandSize+1);
+            double zStart = Math.floor(Math.max(viewZ-gridSize,-1*islandSize));
+            double zEnd = Math.ceil(Math.min(viewZ+gridSize,islandSize+1));
 
             for(double z = zStart;z<=zEnd;z+=step)
-                drawLine(x,yStart,z,x,yEnd,z,partialTicks);
+                drawLine(x,yStart,z,x,yEnd,z,viewX,viewY,viewZ);
             for(double y=yStart;y<=yEnd;y+=step)
-                drawLine(x,y,zStart,x,y,zEnd,partialTicks);
+                drawLine(x,y,zStart,x,y,zEnd,viewX,viewY,viewZ);
         }
-        if(Math.abs(viewZ) > 74) {
-            double yStart = Math.max(viewY-gridSize,0);
-            double yEnd = Math.min(viewY+gridSize,255);
+        if(Math.abs(viewZ) > islandSize-minDistance) {
             double z = viewZ > 0 ? islandSize+1 : -1*islandSize;
-            double xStart = Math.max(viewX-gridSize,-1*islandSize);
-            double xEnd = Math.min(viewX+gridSize,islandSize+1);
+            double xStart = Math.floor(Math.max(viewX-gridSize,-1*islandSize));
+            double xEnd = Math.ceil(Math.min(viewX+gridSize,islandSize+1));
             for(double x = xStart;x<=xEnd;x+=step)
-                drawLine(x,yStart,z,x,yEnd,z,partialTicks);
+                drawLine(x,yStart,z,x,yEnd,z,viewX,viewY,viewZ);
             for(double y=yStart;y<=yEnd;y+=step)
-                drawLine(xStart,y,z,xEnd,y,z,partialTicks);
+                drawLine(xStart,y,z,xEnd,y,z,viewX,viewY,viewZ);
         }
     }
 
@@ -2001,8 +1997,8 @@ public class RenderListener {
         Color color = main.getConfigValues().getColor(Feature.SHOW_HEALING_CIRCLE_WALL);
         GlStateManager.color(color.getRed()/255F, color.getGreen()/255F, color.getBlue()/255F, 0.2F);
 
-        //drawLine(-80,0,-80,-80,255,-80,partialTicks);
-        drawBorderGrid(partialTicks);
+        drawBorderGrid(partialTicks); // Magic happens here
+
         GlStateManager.enableCull();
         GlStateManager.enableTexture2D();
         GlStateManager.enableDepth();
