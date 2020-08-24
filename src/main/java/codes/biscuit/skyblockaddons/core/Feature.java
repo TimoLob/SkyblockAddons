@@ -138,7 +138,7 @@ public enum Feature {
     SHOW_ITEM_DUNGEON_FLOOR(110, Message.SETTING_SHOW_ITEM_DUNGEON_FLOOR, new GuiFeatureData(ColorCode.RED, true), false),
     SHOW_DUNGEON_MILESTONE(111, Message.SETTING_SHOW_DUNGEON_MILESTONE, new GuiFeatureData(EnumUtils.DrawType.TEXT, ColorCode.YELLOW, EnumUtils.AnchorPoint.BOTTOM_RIGHT, -60, -30), false),
     DUNGEONS_COLLECTED_ESSENCES_DISPLAY(112, Message.SETTING_DUNGEONS_COLLECTED_ESSENCES_DISPLAY, new GuiFeatureData(EnumUtils.DrawType.TEXT, ColorCode.YELLOW, EnumUtils.AnchorPoint.BOTTOM_RIGHT, -60, -90), false),
-
+    SHOW_PRIVATE_ISLAND_BORDER(114,Message.SETTING_SHOW_PRIVATE_ISLAND_BORDER,new GuiFeatureData(ColorCode.RED, false),false),
     WARNING_TIME(-1, Message.SETTING_WARNING_DURATION, false),
 
     WARP_ADVANCED_MODE(-1, Message.SETTING_ADVANCED_MODE, true),

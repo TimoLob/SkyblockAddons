@@ -1830,7 +1830,7 @@ public class RenderListener {
                 GlStateManager.popMatrix();
             }
         }
-        if(main.getUtils().isOnSkyblock() && main.getUtils().getLocation() == Location.ISLAND) {
+        if(main.getUtils().isOnSkyblock() && main.getUtils().getLocation() == Location.ISLAND && main.getConfigValues().isEnabled(Feature.SHOW_PRIVATE_ISLAND_BORDER)) {
             drawWorldBorder(partialTicks);
         }
 
@@ -1994,10 +1994,10 @@ public class RenderListener {
         GlStateManager.enableAlpha();
         GlStateManager.disableTexture2D();
 
-        Color color = main.getConfigValues().getColor(Feature.SHOW_HEALING_CIRCLE_WALL);
+        Color color = main.getConfigValues().getColor(Feature.SHOW_PRIVATE_ISLAND_BORDER);
         GlStateManager.color(color.getRed()/255F, color.getGreen()/255F, color.getBlue()/255F, 0.2F);
 
-        drawBorderGrid(partialTicks); // Magic happens here
+        drawBorderGrid(partialTicks); // Draws the grid
 
         GlStateManager.enableCull();
         GlStateManager.enableTexture2D();
