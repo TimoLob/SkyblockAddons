@@ -1139,6 +1139,10 @@ public class RenderListener {
             }
 
             float percent = secrets / (float) maxSecrets;
+            // Sanity check since there is at least one room with 3/1 secrets
+            if(percent>1) {
+                percent = 1;
+            }
             float r;
             float g;
             if (percent <= 0.5) { // Fade from red -> yellow
